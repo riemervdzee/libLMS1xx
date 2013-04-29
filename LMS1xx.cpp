@@ -210,6 +210,7 @@ void LMS1xx::getData(scanData& data) {
 	struct timeval tv;
 	int retval, len;
 	len = 0;
+	buf[0] = 0;
 
 	do {
 		FD_ZERO(&rfds);
