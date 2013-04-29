@@ -29,8 +29,11 @@
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
+#include <iostream>
 
 #include "LMS1xx.h"
+
+#define BUFFER_DATA_SIZE 20000
 
 LMS1xx::LMS1xx() :
 	connected(false) {
@@ -205,7 +208,7 @@ void LMS1xx::scanContinous(int start) {
 }
 
 void LMS1xx::getData(scanData& data) {
-	char buf[20000];
+	char buf[BUFFER_DATA_SIZE];
 	fd_set rfds;
 	struct timeval tv;
 	int retval, len;
@@ -220,9 +223,15 @@ void LMS1xx::getData(scanData& data) {
 		tv.tv_usec = 50000;
 		retval = select(sockDesc + 1, &rfds, NULL, NULL, &tv);
 		if (retval) {
-			len += read(sockDesc, buf + len, 20000 - len);
+			len += read(sockDesc, buf + len, BUFFER_DATA_SIZE - len);
 		}
-	} while ((buf[0] != 0x02) || (buf[len - 1] != 0x03));
+	} while ( ((buf[0] != 0x02) || (buf[len - 1] != 0x03)) && len < BUFFER_DATA_SIZE);
+
+	if( len > (BUFFER_DATA_SIZE - 1))
+	{
+		std::cout << "[Fatal] Databuffer has overflown! Increase the size is recommended" << std::endl;
+		return;
+	}
 
 	//	if (debug)
 	//		std::cout << "scan data recieved" << std::endl;
