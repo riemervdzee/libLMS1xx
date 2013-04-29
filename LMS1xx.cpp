@@ -201,10 +201,10 @@ void LMS1xx::scanContinous(int start) {
 		printf("%s\n", buf);
 	}
 
-	if (start == 0) {
+	/*if (start == 0) {
 		for (int i = 0; i < 10; i++)
 			read(sockDesc, buf, 100);
-	}
+	}*/
 }
 
 void LMS1xx::getData(scanData& data) {
