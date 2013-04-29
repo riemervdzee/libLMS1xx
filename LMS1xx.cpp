@@ -270,6 +270,7 @@ void LMS1xx::getData(scanData& data) {
 	for (int i = 0; i < NumberChannels16Bit; i++) {
 		int type = -1; // 0 DIST1 1 DIST2 2 RSSI1 3 RSSI2
 		char content[6];
+		uint16_t *array;
 		tok = strtok(NULL, " "); //MeasuredDataContent
 		sscanf(tok, "%s", content);
 		if (!strcmp(content, "DIST1")) {
@@ -292,31 +293,35 @@ void LMS1xx::getData(scanData& data) {
 		if (debug)
 			printf("NumberData : %d\n", NumberData);
 
-		if (type == 0) {
-			data.dist_len1 = NumberData;
-		} else if (type == 1) {
-			data.dist_len2 = NumberData;
-		} else if (type == 2) {
-			data.rssi_len1 = NumberData;
-		} else if (type == 3) {
-			data.rssi_len2 = NumberData;
+		switch( type)
+		{
+			case 0:
+				data.dist_len1 = NumberData;
+				array = data.dist1;
+				break;
+
+			case 1:
+				data.dist_len2 = NumberData;
+				array = data.dist2;
+				break;
+
+			case 2:
+				data.rssi_len1 = NumberData;
+				array = data.rssi1;
+				break;
+
+			case 3:
+				data.rssi_len2 = NumberData;
+				array = data.rssi2;
+				break;
 		}
 
 		for (int i = 0; i < NumberData; i++) {
 			int dat;
 			tok = strtok(NULL, " "); //data
-			sscanf(tok, "%X", &dat);
+			dat = strtol( tok, NULL, 16);
 
-			if (type == 0) {
-				data.dist1[i] = dat;
-			} else if (type == 1) {
-				data.dist2[i] = dat;
-			} else if (type == 2) {
-				data.rssi1[i] = dat;
-			} else if (type == 3) {
-				data.rssi2[i] = dat;
-			}
-
+			array[i] = dat;
 		}
 	}
 
@@ -328,6 +333,7 @@ void LMS1xx::getData(scanData& data) {
 	for (int i = 0; i < NumberChannels8Bit; i++) {
 		int type = -1;
 		char content[6];
+		uint16_t *array;
 		tok = strtok(NULL, " "); //MeasuredDataContent
 		sscanf(tok, "%s", content);
 		if (!strcmp(content, "DIST1")) {
@@ -350,29 +356,35 @@ void LMS1xx::getData(scanData& data) {
 		if (debug)
 			printf("NumberData : %d\n", NumberData);
 
-		if (type == 0) {
-			data.dist_len1 = NumberData;
-		} else if (type == 1) {
-			data.dist_len2 = NumberData;
-		} else if (type == 2) {
-			data.rssi_len1 = NumberData;
-		} else if (type == 3) {
-			data.rssi_len2 = NumberData;
+		switch( type)
+		{
+			case 0:
+				data.dist_len1 = NumberData;
+				array = data.dist1;
+				break;
+
+			case 1:
+				data.dist_len2 = NumberData;
+				array = data.dist2;
+				break;
+
+			case 2:
+				data.rssi_len1 = NumberData;
+				array = data.rssi1;
+				break;
+
+			case 3:
+				data.rssi_len2 = NumberData;
+				array = data.rssi2;
+				break;
 		}
+
 		for (int i = 0; i < NumberData; i++) {
 			int dat;
 			tok = strtok(NULL, " "); //data
-			sscanf(tok, "%X", &dat);
+			dat = strtol( tok, NULL, 16);
 
-			if (type == 0) {
-				data.dist1[i] = dat;
-			} else if (type == 1) {
-				data.dist2[i] = dat;
-			} else if (type == 2) {
-				data.rssi1[i] = dat;
-			} else if (type == 3) {
-				data.rssi2[i] = dat;
-			}
+			array[i] = dat;
 		}
 	}
 
