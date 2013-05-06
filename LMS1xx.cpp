@@ -35,14 +35,9 @@
 
 #define BUFFER_DATA_SIZE 20000
 
-LMS1xx::LMS1xx() :
-	connected(false) {
-	debug = false;
-}
+LMS1xx::LMS1xx() : connected(false), loggedin(false), debug(false) {}
 
-LMS1xx::~LMS1xx() {
-
-}
+LMS1xx::~LMS1xx() {}
 
 void LMS1xx::connect(std::string host, int port) {
 	if (!connected) {
@@ -67,12 +62,18 @@ void LMS1xx::disconnect() {
 	if (connected) {
 		close(sockDesc);
 		connected = false;
+		loggedin = false;
 	}
 }
 
 bool LMS1xx::isConnected() {
 	return connected;
 }
+
+bool LMS1xx::isLoggedin() {
+	return loggedin;
+}
+
 
 void LMS1xx::startMeas() {
 	char buf[100];
@@ -124,18 +125,35 @@ status_t LMS1xx::queryStatus() {
 }
 
 void LMS1xx::login() {
-	char buf[100];
-	sprintf(buf, "%c%s%c", 0x02, "sMN SetAccessMode 03 F4724744", 0x03);
+	if(!loggedin) {
+		char buf[100];
+		fd_set rfds;
+		struct timeval tv;
 
-	write(sockDesc, buf, strlen(buf));
+		sprintf(buf, "%c%s%c", 0x02, "sMN SetAccessMode 03 F4724744", 0x03);
 
-	int len = read(sockDesc, buf, 100);
-	//	if (buf[0] != 0x02)
-	//		std::cout << "invalid packet recieved" << std::endl;
-	//	if (debug) {
-	//		buf[len] = 0;
-	//		std::cout << buf << std::endl;
-	//	}
+		int ret = write(sockDesc, buf, strlen(buf));
+
+		FD_ZERO(&rfds);
+		FD_SET(sockDesc, &rfds);
+
+		tv.tv_sec = 0;
+		tv.tv_usec = 50000;
+		int retval = select(sockDesc + 1, &rfds, NULL, NULL, &tv);
+
+		if(retval) {
+			int len = read(sockDesc, buf, 100);
+
+			loggedin = true;
+
+			//	if (buf[0] != 0x02)
+			//		std::cout << "invalid packet recieved" << std::endl;
+			//	if (debug) {
+			//		buf[len] = 0;
+			//		std::cout << buf << std::endl;
+			//	}
+		}
+	}
 }
 
 scanCfg LMS1xx::getScanCfg() const {
@@ -200,11 +218,6 @@ void LMS1xx::scanContinous(int start) {
 		buf[len] = 0;
 		printf("%s\n", buf);
 	}
-
-	/*if (start == 0) {
-		for (int i = 0; i < 10; i++)
-			read(sockDesc, buf, 100);
-	}*/
 }
 
 void LMS1xx::getData(scanData& data) {
